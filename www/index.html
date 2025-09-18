@@ -450,14 +450,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const calculateBtn = document.getElementById('calculate-btn');
-            // Add this inside generateStartingPlayers and generateSubstitutePlayers
-            const rankSelectElement = playerRow.querySelector('select');
-            rankSelectElement.title = "اختر عدد التطويرات (Rank-ups)"; // Arabic tooltip
-            // For English, you can check the language and change accordingly
-            if(lang === 'en') {
-                rankSelectElement.title = "Select number of rank-ups";
-            }
-
             const resetBtn = document.getElementById('reset-btn');
             const resultDiv = document.getElementById('result');
             const ovrValue = document.getElementById('ovr-value');
@@ -656,6 +648,14 @@
                         </div>
                     `;
                     startingPlayersDiv.appendChild(playerRow);
+                    
+                    // Set tooltip after the element is created
+                    const rankSelectElement = playerRow.querySelector('select');
+                    if (lang === 'ar') {
+                        rankSelectElement.title = "اختر عدد التطويرات (Rank-ups)";
+                    } else {
+                        rankSelectElement.title = "Select number of rank-ups";
+                    }
                 });
                 
                 loadSavedData();
@@ -684,6 +684,14 @@
                         </div>
                     `;
                     substitutePlayersDiv.appendChild(playerRow);
+                    
+                    // Set tooltip after the element is created
+                    const rankSelectElement = playerRow.querySelector('select');
+                    if (lang === 'ar') {
+                        rankSelectElement.title = "اختر عدد التطويرات (Rank-ups)";
+                    } else {
+                        rankSelectElement.title = "Select number of rank-ups";
+                    }
                 }
                 
                 loadSavedData();
@@ -727,128 +735,125 @@
                 if (savedData) {
                     const data = JSON.parse(savedData);
                     for (const id in data) {
-                        const element = document.getElementById(id);
-                        if (element) {
-                            element.value = data[id];
+                        const input = document.getElementById(id);
+                        if (input) {
+                            input.value = data[id];
                         }
                     }
                 }
             }
-            
-            
+
             function addEventListenersToInputs() {
-                const allInputsAndSelects = document.querySelectorAll('input, select');
-                allInputsAndSelects.forEach(el => {
-                    el.addEventListener('change', function() {
-                        if (el.tagName === 'INPUT') {
-                            const min = parseInt(this.min);
-                            const max = parseInt(this.max);
-                            if (!isNaN(min) && !isNaN(max)) {
-                                if (this.value < min) this.value = min;
-                                if (this.value > max) this.value = max;
-                            }
-                        }
-                        saveData();
-                    });
-                    el.addEventListener('input', saveData);
+                const allInputs = document.querySelectorAll('input, select');
+                allInputs.forEach(input => {
+                    input.addEventListener('change', saveData);
                 });
             }
 
-            loadAndApplySettings();
-            
-            calculateBtn.addEventListener('click', function() {
-                let totalBaseOvr = 0;
+            function calculateTeamOVR() {
+                const startingPlayers = document.querySelectorAll('#starting-players .player-row');
+                const substitutePlayers = document.querySelectorAll('#substitute-players .player-row');
+                
+                let totalBaseOVR = 0;
                 let totalRankUps = 0;
                 let playerCount = 0;
-                let allStartingPlayersFilled = true;
                 
-                const startingRows = startingPlayersDiv.querySelectorAll('.player-row');
-                startingRows.forEach(row => {
+                // Process starting players
+                let allStartingPlayersFilled = true;
+                startingPlayers.forEach(row => {
                     const ovrInput = row.querySelector('input');
                     const rankSelect = row.querySelector('select');
                     
-                    if (!ovrInput.value || rankSelect.value === '') {
+                    if (!ovrInput.value || !rankSelect.value) {
                         allStartingPlayersFilled = false;
+                        return;
                     }
                     
-                    totalBaseOvr += parseFloat(ovrInput.value);
-                    totalRankUps += parseFloat(rankSelect.value);
+                    const baseOVR = parseInt(ovrInput.value);
+                    const rankUps = parseInt(rankSelect.value);
+                    
+                    totalBaseOVR += baseOVR;
+                    totalRankUps += rankUps;
                     playerCount++;
                 });
-
+                
                 if (!allStartingPlayersFilled) {
                     showAlert(translations[languageSelect.value].alertMessage);
                     return;
                 }
-
-                const substituteRows = substitutePlayersDiv.querySelectorAll('.player-row');
-                substituteRows.forEach(row => {
+                
+                // Process substitute players (optional)
+                substitutePlayers.forEach(row => {
                     const ovrInput = row.querySelector('input');
                     const rankSelect = row.querySelector('select');
                     
-                    if (ovrInput.value !== '') {
-                        totalBaseOvr += parseFloat(ovrInput.value);
-                        totalRankUps += parseFloat(rankSelect.value);
+                    if (ovrInput.value && rankSelect.value) {
+                        const baseOVR = parseInt(ovrInput.value);
+                        const rankUps = parseInt(rankSelect.value);
+                        
+                        totalBaseOVR += baseOVR;
+                        totalRankUps += rankUps;
                         playerCount++;
                     }
                 });
                 
-                const baseOvrAvg = totalBaseOvr / playerCount;
+                // Calculate averages
+                const baseOVRAvg = totalBaseOVR / playerCount;
                 const rankUpsAvg = totalRankUps / playerCount;
-                const rankUpsUsed = Math.ceil(rankUpsAvg);
-                const rawOvr = baseOvrAvg + rankUpsUsed;
-                const teamOvr = Math.ceil(rawOvr);
                 
-                const lang = languageSelect.value;
-                document.getElementById('base-ovr-sum').textContent = `${translations[lang].baseOvrSum} ${totalBaseOvr}`;
-                document.getElementById('rank-ups-sum').textContent = `${translations[lang].rankUpsSum} ${totalRankUps}`;
-                document.getElementById('base-ovr-avg').textContent = `${translations[lang].baseOvrAvg} ${baseOvrAvg.toFixed(6)}`;
-                document.getElementById('rank-ups-avg').textContent = `${translations[lang].rankUpsAvg} ${rankUpsAvg.toFixed(6)}${translations[lang].rankUpsRoundedUp}${rankUpsUsed})`;
-                document.getElementById('raw-calculation').textContent = `${translations[lang].rawCalculation} ${rawOvr.toFixed(6)}${translations[lang].rankUpsUsed}${rankUpsUsed}${translations[lang].rankUpsFor}`;
-
-                ovrValue.textContent = teamOvr;
+                // Calculate final OVR
+                const rawOVR = baseOVRAvg + rankUpsAvg;
+                const finalOVR = Math.floor(rawOVR);
+                
+                // Update result display
+                ovrValue.textContent = finalOVR;
+                document.getElementById('base-ovr-sum').textContent = translations[languageSelect.value].baseOvrSum + totalBaseOVR;
+                document.getElementById('rank-ups-sum').textContent = translations[languageSelect.value].rankUpsSum + totalRankUps;
+                document.getElementById('base-ovr-avg').textContent = translations[languageSelect.value].baseOvrAvg + baseOVRAvg.toFixed(2);
+                document.getElementById('rank-ups-avg').textContent = translations[languageSelect.value].rankUpsAvg + rankUpsAvg.toFixed(2);
+                document.getElementById('raw-calculation').textContent = translations[languageSelect.value].rawCalculation + rawOVR.toFixed(2);
+                
                 resultDiv.classList.add('show');
-                resultDiv.scrollIntoView({ behavior: 'smooth' });
-                saveData();
+            }
+
+            function resetForm() {
+                showConfirm(translations[languageSelect.value].confirmMessage, () => {
+                    const allInputs = document.querySelectorAll('input, select');
+                    allInputs.forEach(input => {
+                        input.value = '';
+                    });
+                    localStorage.removeItem('fcMobileTeamData');
+                    resultDiv.classList.remove('show');
+                });
+            }
+
+            // Event Listeners
+            calculateBtn.addEventListener('click', calculateTeamOVR);
+            resetBtn.addEventListener('click', resetForm);
+            
+            languageSelect.addEventListener('change', function() {
+                localStorage.setItem('fcMobileLang', this.value);
+                updateUI(this.value);
             });
             
-            resetBtn.addEventListener('click', function() {
-                showConfirm(translations[languageSelect.value].confirmMessage, () => {
-                    const allInputsAndSelects = document.querySelectorAll('input, select');
-                    allInputsAndSelects.forEach(el => {
-                        if (el.tagName === 'SELECT') {
-                            el.value = '';
-                        } else {
-                            el.value = '';
-                        }
-                    });
-                    // Reset starting players dropdowns to be unselected
-                    const startingRankSelects = startingPlayersDiv.querySelectorAll('select');
-                    startingRankSelects.forEach(sel => sel.value = '');
-                    resultDiv.classList.remove('show');
-                    localStorage.removeItem('fcMobileTeamData');
-                });
-            });
-
-            languageSelect.addEventListener('change', function() {
-                const newLang = this.value;
-                localStorage.setItem('fcMobileLang', newLang);
-                updateUI(newLang);
-            });
-
             themeToggle.addEventListener('click', function() {
-                document.body.classList.toggle('light-theme');
-                const isLightTheme = document.body.classList.contains('light-theme');
-                const theme = isLightTheme ? 'light' : 'dark';
-                localStorage.setItem('fcMobileTheme', theme);
-                themeToggle.innerHTML = isLightTheme ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+                const isLightTheme = document.body.classList.toggle('light-theme');
+                if (isLightTheme) {
+                    localStorage.setItem('fcMobileTheme', 'light');
+                    this.innerHTML = '<i class="fas fa-moon"></i>';
+                } else {
+                    localStorage.setItem('fcMobileTheme', 'dark');
+                    this.innerHTML = '<i class="fas fa-sun"></i>';
+                }
             });
             
             formationSelect.addEventListener('change', function() {
-                const newFormation = this.value;
-                localStorage.setItem('fcMobileFormation', newFormation);
-                generateStartingPlayers(newFormation, languageSelect.value);
+                generateStartingPlayers(this.value, languageSelect.value);
+                saveData();
             });
+
+            // Initialize the app
+            loadAndApplySettings();
         });
     </script>
 </body>
