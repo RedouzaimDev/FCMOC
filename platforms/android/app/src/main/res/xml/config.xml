@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="io.cordova.hellocordova" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>FCMOC</name>
+    <description>An App That Helps You To Calculate Your FC MOBILE Team OVERALL
+## Disclaimer
+FCMOC is an independent, fan-made project.  
+It is **not affiliated with or endorsed by EA Sports or FC Mobile**.  
+All trademarks and copyrights are the property of their respective owners.
+</description>
+    <author email="" href="https://github.com/RedouzaimDev">
+       RzDevs
+    </author>
+    <content src="index.html" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <preference name="loglevel" value="DEBUG" />
+</widget>
