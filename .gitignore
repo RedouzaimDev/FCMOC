@@ -1,0 +1,8 @@
+# Cordova/Node generated files to ignore
+node_modules/
+platforms/
+plugins/
+build/
+.gradle/
+*.apk
+*.keystore
