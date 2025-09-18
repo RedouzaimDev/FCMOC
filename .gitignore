@@ -15,6 +15,7 @@ platforms/
 build/
 bin/
 obj/
+*.idsig
 
 # IDE / Editor files
 .idea/
