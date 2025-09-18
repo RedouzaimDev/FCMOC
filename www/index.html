@@ -92,13 +92,14 @@
     }
 
     #language-select, #theme-toggle {
-        padding: 8px;
+        padding: 6px;
+        width: 120px; /* Smaller width */
         border: none;
         border-radius: 8px;
         background-color: var(--input-bg);
         color: var(--input-text);
         cursor: pointer;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         flex-shrink: 0; /* Prevents items from shrinking */
     }
 
@@ -449,6 +450,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const calculateBtn = document.getElementById('calculate-btn');
+            // Add this inside generateStartingPlayers and generateSubstitutePlayers
+            const rankSelectElement = playerRow.querySelector('select');
+            rankSelectElement.title = "اختر عدد التطويرات (Rank-ups)"; // Arabic tooltip
+            // For English, you can check the language and change accordingly
+            if(lang === 'en') {
+                rankSelectElement.title = "Select number of rank-ups";
+            }
+
             const resetBtn = document.getElementById('reset-btn');
             const resultDiv = document.getElementById('result');
             const ovrValue = document.getElementById('ovr-value');
@@ -725,6 +734,7 @@
                     }
                 }
             }
+            
             
             function addEventListenersToInputs() {
                 const allInputsAndSelects = document.querySelectorAll('input, select');
